@@ -56,11 +56,9 @@ public class PersonController {
      */
     @PostMapping("/")
     public ResponseEntity<Person> create(@RequestBody Person person) {
-        Person personDB;
-        try {
-            personDB = personService.save(person);
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Объект не создан!");
+        Person personDB = personService.save(person);
+        if (personDB == null) {
+            return new ResponseEntity<>(new Person(), HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity<>(
                 personDB,
@@ -76,9 +74,7 @@ public class PersonController {
      */
     @PutMapping("/")
     public ResponseEntity<Void> update(@RequestBody Person person) {
-        try {
-            personService.save(person);
-        } catch (Exception e) {
+        if (!personService.update(person)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Объект не обновлен!");
         }
         return ResponseEntity.ok().build();
@@ -94,9 +90,7 @@ public class PersonController {
     public ResponseEntity<Void> delete(@PathVariable("id") int id) {
         Person person = new Person();
         person.setId(id);
-        try {
-            personService.delete(person);
-        } catch (Exception e) {
+        if (!personService.delete(person)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Объект не удален!");
         }
         return ResponseEntity.ok().build();

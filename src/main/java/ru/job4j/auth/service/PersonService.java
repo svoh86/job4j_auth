@@ -29,7 +29,25 @@ public class PersonService {
         return personRepository.save(person);
     }
 
-    public void delete(Person person) {
-        personRepository.delete(person);
+    public boolean update(Person person) {
+        boolean flag;
+        try {
+            personRepository.save(person);
+            flag = true;
+        } catch (Exception e) {
+            flag = false;
+        }
+        return flag;
+    }
+
+    public boolean delete(Person person) {
+        boolean flag;
+        try {
+            personRepository.delete(person);
+            flag = true;
+        } catch (Exception e) {
+            flag = false;
+        }
+        return flag;
     }
 }
