@@ -56,12 +56,8 @@ public class PersonController {
      */
     @PostMapping("/")
     public ResponseEntity<Person> create(@RequestBody Person person) {
-        Person personDB = personService.save(person);
-        if (personDB == null) {
-            return new ResponseEntity<>(new Person(), HttpStatus.NOT_FOUND);
-        }
         return new ResponseEntity<>(
-                personDB,
+                personService.save(person),
                 HttpStatus.CREATED
         );
     }

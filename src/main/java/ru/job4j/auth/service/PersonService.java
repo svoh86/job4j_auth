@@ -30,23 +30,19 @@ public class PersonService {
     }
 
     public boolean update(Person person) {
-        boolean flag;
-        try {
+        boolean flag = false;
+        if (personRepository.existsById(person.getId())) {
             personRepository.save(person);
             flag = true;
-        } catch (Exception e) {
-            flag = false;
         }
         return flag;
     }
 
     public boolean delete(Person person) {
-        boolean flag;
-        try {
+        boolean flag = false;
+        if (personRepository.existsById(person.getId())) {
             personRepository.delete(person);
             flag = true;
-        } catch (Exception e) {
-            flag = false;
         }
         return flag;
     }
