@@ -4,8 +4,9 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import ru.job4j.auth.domain.Person;
-import ru.job4j.auth.repository.PersonRepository;
+import ru.job4j.auth.service.PersonService;
 
 import java.util.List;
 import java.util.Optional;
@@ -20,7 +21,7 @@ import java.util.Optional;
 @AllArgsConstructor
 @RequestMapping("/person")
 public class PersonController {
-    private final PersonRepository personRepository;
+    private final PersonService personService;
 
     /**
      * GET/person/
@@ -29,7 +30,7 @@ public class PersonController {
      */
     @GetMapping("/")
     public List<Person> findAll() {
-        return (List<Person>) personRepository.findAll();
+        return personService.findAll();
     }
 
     /**
@@ -40,7 +41,7 @@ public class PersonController {
      */
     @GetMapping("/{id}")
     public ResponseEntity<Person> findById(@PathVariable("id") int id) {
-        Optional<Person> person = personRepository.findById(id);
+        Optional<Person> person = personService.findById(id);
         return new ResponseEntity<>(
                 person.orElse(new Person()),
                 person.isPresent() ? HttpStatus.OK : HttpStatus.NOT_FOUND
@@ -55,8 +56,14 @@ public class PersonController {
      */
     @PostMapping("/")
     public ResponseEntity<Person> create(@RequestBody Person person) {
+        Person personDB;
+        try {
+            personDB = personService.save(person);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Объект не создан!");
+        }
         return new ResponseEntity<>(
-                personRepository.save(person),
+                personDB,
                 HttpStatus.CREATED
         );
     }
@@ -69,7 +76,11 @@ public class PersonController {
      */
     @PutMapping("/")
     public ResponseEntity<Void> update(@RequestBody Person person) {
-        personRepository.save(person);
+        try {
+            personService.save(person);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Объект не обновлен!");
+        }
         return ResponseEntity.ok().build();
     }
 
@@ -83,7 +94,11 @@ public class PersonController {
     public ResponseEntity<Void> delete(@PathVariable("id") int id) {
         Person person = new Person();
         person.setId(id);
-        personRepository.delete(person);
+        try {
+            personService.delete(person);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Объект не удален!");
+        }
         return ResponseEntity.ok().build();
     }
 }
