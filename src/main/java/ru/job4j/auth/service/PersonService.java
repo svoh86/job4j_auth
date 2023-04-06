@@ -2,6 +2,7 @@ package ru.job4j.auth.service;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.job4j.auth.domain.Person;
 import ru.job4j.auth.repository.PersonRepository;
 
@@ -29,18 +30,20 @@ public class PersonService {
         return personRepository.save(person);
     }
 
+    @Transactional
     public boolean update(Person person) {
         boolean flag = false;
-        if (personRepository.existsById(person.getId())) {
+        if (personRepository.findById(person.getId()).isPresent()) {
             personRepository.save(person);
             flag = true;
         }
         return flag;
     }
 
+    @Transactional
     public boolean delete(Person person) {
         boolean flag = false;
-        if (personRepository.existsById(person.getId())) {
+        if (personRepository.findById(person.getId()).isPresent()) {
             personRepository.delete(person);
             flag = true;
         }
