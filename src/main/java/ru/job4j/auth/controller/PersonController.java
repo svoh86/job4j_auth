@@ -91,4 +91,9 @@ public class PersonController {
         }
         return ResponseEntity.ok().build();
     }
+
+    @PostMapping("/sign-up")
+    public void signUp(@RequestBody Person person) {
+        personService.save(person);
+    }
 }
