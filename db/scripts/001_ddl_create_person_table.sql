@@ -1,8 +1,8 @@
 CREATE TABLE IF NOT EXISTS person
 (
     id   SERIAL PRIMARY KEY,
-    login TEXT NOT NULL UNIQUE,
-    password TEXT NOT NULL
+    login TEXT UNIQUE,
+    password TEXT
 );
 
 comment on table person is 'Пользователь';

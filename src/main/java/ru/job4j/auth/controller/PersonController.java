@@ -1,13 +1,21 @@
 package ru.job4j.auth.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import ru.job4j.auth.domain.Person;
+import ru.job4j.auth.handlers.GlobalExceptionHandler;
 import ru.job4j.auth.service.PersonService;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,6 +30,8 @@ import java.util.Optional;
 @RequestMapping("/person")
 public class PersonController {
     private final PersonService personService;
+    private static final Logger LOGGER = LoggerFactory.getLogger(GlobalExceptionHandler.class.getSimpleName());
+    private final ObjectMapper objectMapper;
 
     /**
      * GET/person/
@@ -42,10 +52,10 @@ public class PersonController {
     @GetMapping("/{id}")
     public ResponseEntity<Person> findById(@PathVariable("id") int id) {
         Optional<Person> person = personService.findById(id);
-        return new ResponseEntity<>(
-                person.orElse(new Person()),
-                person.isPresent() ? HttpStatus.OK : HttpStatus.NOT_FOUND
-        );
+        if (person.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Объект не найден!");
+        }
+        return new ResponseEntity<>(person.get(), HttpStatus.OK);
     }
 
     /**
@@ -56,6 +66,12 @@ public class PersonController {
      */
     @PostMapping("/")
     public ResponseEntity<Person> create(@RequestBody Person person) {
+        if (person.getLogin() == null || person.getPassword() == null) {
+            throw new NullPointerException("Username or password cannot be empty!");
+        }
+        if (person.getPassword().length() < 6) {
+            throw new IllegalArgumentException("Password cannot be less than 6 characters!");
+        }
         return new ResponseEntity<>(
                 personService.save(person),
                 HttpStatus.CREATED
@@ -94,6 +110,23 @@ public class PersonController {
 
     @PostMapping("/sign-up")
     public void signUp(@RequestBody Person person) {
+        if (person.getLogin() == null || person.getPassword() == null) {
+            throw new NullPointerException("Username or password cannot be empty!");
+        }
+        if (person.getPassword().length() < 6) {
+            throw new IllegalArgumentException("Password cannot be less than 6 characters!");
+        }
         personService.save(person);
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public void exceptionHandler(Exception e, HttpServletResponse response) throws IOException {
+        response.setStatus(HttpStatus.BAD_REQUEST.value());
+        response.setContentType("application/json");
+        response.getWriter().write(objectMapper.writeValueAsString(new HashMap<>() {{
+            put("message", e.getMessage());
+            put("type", e.getClass());
+        }}));
+        LOGGER.error(e.getMessage());
     }
 }
