@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import ru.job4j.auth.domain.Person;
+import ru.job4j.auth.dto.PersonDTO;
 import ru.job4j.auth.handlers.GlobalExceptionHandler;
 import ru.job4j.auth.service.PersonService;
 
@@ -128,5 +129,17 @@ public class PersonController {
             put("type", e.getClass());
         }}));
         LOGGER.error(e.getMessage());
+    }
+
+    @PatchMapping("/{id}")
+    public Person updatePassword(@RequestBody PersonDTO personDTO, @PathVariable("id") int id) {
+        Person personDB = personService.findById(id).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Person not found!"));
+        if (personDTO.getPassword().length() < 6) {
+            throw new IllegalArgumentException("Password cannot be less than 6 characters!");
+        }
+        personDB.setPassword(personDTO.getPassword());
+        personService.update(personDB);
+        return personDB;
     }
 }
