@@ -14,8 +14,8 @@ import ru.job4j.auth.handlers.GlobalExceptionHandler;
 import ru.job4j.auth.service.PersonService;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
@@ -66,13 +66,7 @@ public class PersonController {
      * @return в ответ приходит созданный пользователь со сгенерированным ID и статус
      */
     @PostMapping("/")
-    public ResponseEntity<Person> create(@RequestBody Person person) {
-        if (person.getLogin() == null || person.getPassword() == null) {
-            throw new NullPointerException("Username or password cannot be empty!");
-        }
-        if (person.getPassword().length() < 6) {
-            throw new IllegalArgumentException("Password cannot be less than 6 characters!");
-        }
+    public ResponseEntity<Person> create(@Valid @RequestBody Person person) {
         return new ResponseEntity<>(
                 personService.save(person),
                 HttpStatus.CREATED
@@ -86,7 +80,7 @@ public class PersonController {
      * @return в ответе статус выполнения
      */
     @PutMapping("/")
-    public ResponseEntity<Void> update(@RequestBody Person person) {
+    public ResponseEntity<Void> update(@Valid @RequestBody Person person) {
         if (!personService.update(person)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Объект не обновлен!");
         }
@@ -110,13 +104,7 @@ public class PersonController {
     }
 
     @PostMapping("/sign-up")
-    public void signUp(@RequestBody Person person) {
-        if (person.getLogin() == null || person.getPassword() == null) {
-            throw new NullPointerException("Username or password cannot be empty!");
-        }
-        if (person.getPassword().length() < 6) {
-            throw new IllegalArgumentException("Password cannot be less than 6 characters!");
-        }
+    public void signUp(@Valid @RequestBody Person person) {
         personService.save(person);
     }
 
@@ -132,12 +120,9 @@ public class PersonController {
     }
 
     @PatchMapping("/{id}")
-    public Person updatePassword(@RequestBody PersonDTO personDTO, @PathVariable("id") int id) {
+    public Person updatePassword(@Valid @RequestBody PersonDTO personDTO, @PathVariable("id") int id) {
         Person personDB = personService.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Person not found!"));
-        if (personDTO.getPassword().length() < 6) {
-            throw new IllegalArgumentException("Password cannot be less than 6 characters!");
-        }
         personDB.setPassword(personDTO.getPassword());
         personService.update(personDB);
         return personDB;
