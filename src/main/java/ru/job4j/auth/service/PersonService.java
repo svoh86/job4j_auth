@@ -16,6 +16,7 @@ import java.util.Optional;
  */
 @Service
 @AllArgsConstructor
+@Transactional(readOnly = true)
 public class PersonService {
     private final PersonRepository personRepository;
     private final BCryptPasswordEncoder encoder;
@@ -28,6 +29,7 @@ public class PersonService {
         return personRepository.findById(id);
     }
 
+    @Transactional
     public Person save(Person person) {
         person.setPassword(encoder.encode(person.getPassword()));
         return personRepository.save(person);
