@@ -31,11 +31,23 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
     }
 
+    /**
+     * Настройка аутентификации
+     *
+     * @param auth AuthenticationManagerBuilder
+     * @throws Exception исключение
+     */
     @Override
     public void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.userDetailsService(userDetailsService).passwordEncoder(bCryptPasswordEncoder);
     }
 
+    /**
+     * Настройка авторизации и Spring Security
+     *
+     * @param http HttpSecurity
+     * @throws Exception исключение
+     */
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.cors().and().csrf().disable().authorizeRequests()
