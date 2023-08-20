@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -16,6 +17,8 @@ import ru.job4j.auth.service.PersonService;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
@@ -126,5 +129,20 @@ public class PersonController {
         personDB.setPassword(personDTO.getPassword());
         personService.update(personDB);
         return personDB;
+    }
+
+    /**
+     * Метод раздает pdf-файл
+     *
+     * @return pdf-файл
+     * @throws IOException исключение
+     */
+    @GetMapping("/pdf")
+    public ResponseEntity<byte[]> getPDF() throws IOException {
+        byte[] content = Files.readAllBytes(Path.of("./book.pdf"));
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_PDF)
+                .contentLength(content.length)
+                .body(content);
     }
 }
